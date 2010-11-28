@@ -68,7 +68,16 @@ parseChar = do
     text <- try (string "newline" <|> string "space") <|> do
         c <- anyChar
         return [c]
-return $ Char $ case text of "space" -> ' ' "newline" -> '\n' otherwise -> text !! 0 parseFloat :: Parser LispVal parseFloat = do a <- many1 digit char '.' b <- many1 digit
+    return $ Char $ case text of
+        "space" -> ' '
+        "newline" -> '\n'
+        otherwise -> text !! 0
+
+parseFloat :: Parser LispVal
+parseFloat = do
+    a <- many1 digit
+    char '.'
+    b <- many1 digit
     return $ Float $ extractRead (readFloat (a ++ "." ++ b))
 
 parseRatio :: Parser LispVal
@@ -226,6 +235,7 @@ unwordsList :: [LispVal] -> String
 unwordsList = unwords . map showVal
 
 eval :: LispVal -> LispVal
+eval val@(Atom _) = val
 eval val@(String _) = val
 eval val@(Number _) = val
 eval val@(Bool _) = val
@@ -298,3 +308,4 @@ readExpr input = case parse parseExpr "lisp" input of
 
 main :: IO ()
 main = getArgs >>= putStrLn . show . eval . readExpr . (!! 0)
+
